@@ -3,9 +3,7 @@ library flappy_search_bar;
 import 'dart:async';
 
 import 'package:async/async.dart';
-import 'package:flappy_search_bar/scaled_tile.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import 'search_bar_style.dart';
 
@@ -31,7 +29,8 @@ class SearchBarController<T> {
   CancelableOperation _cancelableOperation;
   int minimumChars;
 
-  void setTextController(TextEditingController _searchQueryController, minimunChars) {
+  void setTextController(
+      TextEditingController _searchQueryController, minimunChars) {
     this._searchQueryController = _searchQueryController;
     this.minimumChars = minimunChars;
   }
@@ -123,9 +122,6 @@ class SearchBarController<T> {
   }
 }
 
-/// Signature for a function that creates [ScaledTile] for a given index.
-typedef ScaledTile IndexedScaledTileBuilder(int index);
-
 class SearchBar<T> extends StatefulWidget {
   /// Future returning searched items
   final Future<List<T>> Function(String text) onSearch;
@@ -193,10 +189,6 @@ class SearchBar<T> extends StatefulWidget {
   /// Weather the list should take the minimum place or not
   final bool shrinkWrap;
 
-  /// Called to get the tile at the specified index for the
-  /// [SliverGridStaggeredTileLayout].
-  final IndexedScaledTileBuilder indexedScaledTileBuilder;
-
   /// Set the scrollDirection
   final Axis scrollDirection;
 
@@ -239,7 +231,6 @@ class SearchBar<T> extends StatefulWidget {
     this.searchBarStyle = const SearchBarStyle(),
     this.crossAxisCount = 1,
     this.shrinkWrap = false,
-    this.indexedScaledTileBuilder,
     this.scrollDirection = Axis.vertical,
     this.mainAxisSpacing = 0.0,
     this.crossAxisSpacing = 0.0,
@@ -257,6 +248,7 @@ class _SearchBarState<T> extends State<SearchBar<T>>
   bool _loading = false;
   Widget _error;
   final _searchQueryController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   Timer _debounce;
   bool _animate = false;
   List<T> _list = [];
@@ -268,7 +260,8 @@ class _SearchBarState<T> extends State<SearchBar<T>>
     searchBarController =
         widget.searchBarController ?? SearchBarController<T>();
     searchBarController.setListener(this);
-    searchBarController.setTextController(_searchQueryController, widget.minimumChars);
+    searchBarController.setTextController(
+        _searchQueryController, widget.minimumChars);
   }
 
   @override
@@ -336,21 +329,18 @@ class _SearchBarState<T> extends State<SearchBar<T>>
 
   Widget _buildListView(
       List<T> items, Widget Function(T item, int index) builder) {
-    return Padding(
-      padding: widget.listPadding,
-      child: StaggeredGridView.countBuilder(
-        crossAxisCount: widget.crossAxisCount,
+    return Scrollbar(
+      controller: _scrollController,
+      child: ListView.separated(
+        physics: BouncingScrollPhysics(),
+        controller: _scrollController,
         itemCount: items.length,
-        shrinkWrap: widget.shrinkWrap,
-        staggeredTileBuilder:
-            widget.indexedScaledTileBuilder ?? (int index) => ScaledTile.fit(1),
-        scrollDirection: widget.scrollDirection,
-        mainAxisSpacing: widget.mainAxisSpacing,
-        crossAxisSpacing: widget.crossAxisSpacing,
-        addAutomaticKeepAlives: true,
         itemBuilder: (BuildContext context, int index) {
           return builder(items[index], index);
         },
+        separatorBuilder: (BuildContext context, int index) => const Divider(
+          height: 0,
+        ),
       ),
     );
   }
