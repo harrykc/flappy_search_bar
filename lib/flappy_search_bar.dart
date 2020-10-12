@@ -71,6 +71,10 @@ class SearchBarController<T> {
     }
   }
 
+  void initList(Future<List<T>> Function(String text) onSearch) {
+    _search('', onSearch);
+  }
+
   void injectSearch(
       String searchText, Future<List<T>> Function(String text) onSearch) {
     if (searchText != null && searchText.length >= minimumChars) {
