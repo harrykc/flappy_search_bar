@@ -72,7 +72,11 @@ class SearchBarController<T> {
   }
 
   void initList(Future<List<T>> Function(String text) onSearch) {
-    _search('', onSearch);
+    if (_searchQueryController?.text == null) {
+      _search('', onSearch);
+    }
+
+    return;
   }
 
   void injectSearch(
