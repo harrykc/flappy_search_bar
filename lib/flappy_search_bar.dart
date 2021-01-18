@@ -340,7 +340,7 @@ class _SearchBarState<T> extends State<SearchBar<T>>
     return Scrollbar(
       controller: _scrollController,
       child: ListView.separated(
-        physics: BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         controller: _scrollController,
         itemCount: items.length,
         itemBuilder: (BuildContext context, int index) {
